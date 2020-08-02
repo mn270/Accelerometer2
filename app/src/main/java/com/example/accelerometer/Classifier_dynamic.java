@@ -11,16 +11,16 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 
-public class Classifier {
+public class Classifier_dynamic {
 
 
     private final Interpreter.Options options = new Interpreter.Options();
     private final Interpreter mInterpreter;
 
-    private static final String MODEL_FILE = "converted_model4.tflite";
+    private static final String MODEL_FILE = "dynamic_model2.tflite";
 
 
-    public Classifier(Activity activity) throws IOException {
+    public Classifier_dynamic(Activity activity) throws IOException {
         mInterpreter = new Interpreter(loadModelFile(activity), options);
     }
     private MappedByteBuffer loadModelFile(Activity activity) throws IOException {
@@ -34,14 +34,14 @@ public class Classifier {
 
 
     public float[][] predictProbabilities(float[] data) {
-        float[][] result = new float[1][6];
+        float[][] result = new float[1][3];
 
         float [][][] matrix = new float[1][128][9];
         for (int i = 0; i < 128; i++) {
             for (int j= 0; j<9; j++) {
                 matrix[0][i][j] = data[128*j+i];
+            }
         }
-    }
         mInterpreter.run(matrix, result);
         return result;
     }

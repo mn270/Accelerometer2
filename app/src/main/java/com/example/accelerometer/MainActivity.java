@@ -75,7 +75,11 @@ public class MainActivity<_> extends AppCompatActivity implements SensorEventLis
     int lay = 0;
 
     private float[][] results;
+    private float[][] results_2;
     private Classifier classifier;
+    private Classifier_binary classifier_binary;
+    private Classifier_dynamic classifier_dynamic;
+    private Classifier_static classifier_static;
 
     private static final String TAG = "MainActivity";
     private SensorManager sensorManager;
@@ -173,6 +177,9 @@ public class MainActivity<_> extends AppCompatActivity implements SensorEventLis
 
         try {
             classifier = new Classifier(this);
+            classifier_binary = new Classifier_binary(this);
+            classifier_dynamic = new Classifier_dynamic(this);
+            classifier_static = new Classifier_static(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -404,32 +411,78 @@ public class MainActivity<_> extends AppCompatActivity implements SensorEventLis
             data.addAll(gro_bodyY);
             data.addAll(gro_bodyZ);
 
-            Result resu;
+//            Use for one classifier
+//            Result resu;
+//            results = classifier.predictProbabilities(toFloatArray(data));
+//            resu = new Result(results);
+//
+//            switch(resu.getNumber()){
+//                case 0:
+//                   walk++;
+//                    break;
+//                case 1:
+//                    walk_up++;
+//                    break;
+//                case 2:
+//                    walk_down++;
+//                    break;
+//                case 3:
+//                    sit++;
+//                    break;
+//                case 4:
+//                    stand++;
+//                    break;
+//                case 5:
+//                    lay++;
+//                    break;
+//                default:
+//                   break;
+//            }
 
-            results = classifier.predictProbabilities(toFloatArray(data));
-            resu = new Result(results);
+//            Use for cascade classifier (3 models)
+            Result_binary result_binary;
+            Result_3 result_3;
 
-            switch(resu.getNumber()){
+            results = classifier_binary.predictProbabilities(toFloatArray(data));
+            result_binary = new Result_binary(results);
+
+            switch(result_binary.getNumber()){
                 case 0:
-                   walk++;
+                    results_2 = classifier_dynamic.predictProbabilities(toFloatArray(data));
+                    result_3 = new Result_3(results_2);
+                    switch(result_3.getNumber()){
+                        case 0:
+                           walk++;
+                            break;
+                        case 1:
+                            walk_up++;
+                            break;
+                        case 2:
+                            walk_down++;
+                            break;
+                        default:
+                           break;
+                    }
                     break;
                 case 1:
-                    walk_up++;
-                    break;
-                case 2:
-                    walk_down++;
-                    break;
-                case 3:
-                    sit++;
-                    break;
-                case 4:
-                    stand++;
-                    break;
-                case 5:
-                    lay++;
+                    results_2 = classifier_static.predictProbabilities(toFloatArray(data));
+                    result_3 = new Result_3(results_2);
+                    switch(result_3.getNumber()){
+                        case 0:
+                            sit++;
+                            break;
+                        case 1:
+                            stand++;
+                            break;
+                        case 2:
+                            lay++;
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 default:
-                   break;
+                    break;
             }
 
             acc_X.clear();
@@ -468,8 +521,8 @@ public class MainActivity<_> extends AppCompatActivity implements SensorEventLis
     }
 
     private static void filter( List<Float> input, Memory mem){
-        float[] a = new float [] {1, -2.79902201f, 2.6177355f, -0.81779236f};
-        float[] b = new float [] {0.00011514f, 0.00034542f, 0.00034542f, 0.00011514f};
+        float[] a = new float [] {1, 1.76004188f, 1.18289326f, 0.27805992f};
+        float[] b = new float [] {0.52762438f, 1.58287315f, 1.58287315f, 0.52762438f};
         List<Float> output;
         List<Float> x;
         List<Float> window;
@@ -501,7 +554,7 @@ public class MainActivity<_> extends AppCompatActivity implements SensorEventLis
         output.add(mem.getY(2));
         // 3rd order low pass Butterworth filter with a corner frequency of 20 Hz to remove noise
         for (int i = 0; i<128;i++){
-           // output.add(b[0]*x.get(3+i)+b[1]*x.get(2+i)+b[2]*x.get(1+i)+b[3]*x.get(i)-a[1]*output.get(i+2)-a[2]*output.get(i+1)-a[3]*output.get(i));
+          //  output.add(b[0]*x.get(3+i)+b[1]*x.get(2+i)+b[2]*x.get(1+i)+b[3]*x.get(i)-a[1]*output.get(i+2)-a[2]*output.get(i+1)-a[3]*output.get(i));
             output.add(x.get(i));
 
         }
